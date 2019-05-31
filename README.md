@@ -3,4 +3,5 @@
 * `cd nopCommerce`
 * `dotnet build src\NopCommerce.sln`
 * `git submodule add git@github.com:marketvision/Nop.Plugin.ExternalAuth.oAuth2.git src/Plugins/Nop.Plugin.ExternalAuth.oAuth2`
-* `src\Plugins\Nop.Plugin.ExternalAuth.oAuth2\Nop.Plugin.ExternalAuth.oAuth2.csproj`
+
+At this point you have all code and you could start messing around
