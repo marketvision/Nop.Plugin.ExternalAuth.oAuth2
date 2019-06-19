@@ -33,7 +33,12 @@
         /// <summary>
         /// Callback path
         /// </summary>
-        public static string CallbackPath => "/signin-oauth2";
+        public static string SigninCallbackPath => "/signin-oauth2";
+
+        /// <summary>
+        /// Callback path
+        /// </summary>
+        public static string SignoutCallbackPath => "/signout-oauth2";
 
         /// <summary>
         /// Name of the view component

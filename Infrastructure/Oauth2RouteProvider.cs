@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Routing;
-using Nop.Services.Authentication.External;
 using Nop.Web.Framework.Localization;
 using Nop.Web.Framework.Mvc.Routing;
 
@@ -9,11 +8,17 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Infrastructure
     {
         public void RegisterRoutes(IRouteBuilder routeBuilder)
         {
+            ReplaceRoute(routeBuilder, "Login", "login/", "OAuth2Authentication", "Login", "Nop.Plugin.ExternalAuth.OAuth2.Controllers");
+            ReplaceRoute(routeBuilder, "Logout", "logout/", "OAuth2Authentication", "Logout", "Nop.Plugin.ExternalAuth.OAuth2.Controllers");
+        }
+
+        private void ReplaceRoute(IRouteBuilder routeBuilder, string name, string template, string controller, string action, string assembly)
+        {
             Route route = null;
 
             foreach (Route item in routeBuilder.Routes)
             {
-                if (item.Name == "Login")
+                if (item.Name == name)
                 {
                     route = item;
                     break;
@@ -23,11 +28,11 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Infrastructure
             if (route != null)
                 routeBuilder.Routes.Remove(route);
 
-            routeBuilder.MapLocalizedRoute("Login",
-                  "login/",
-                  new { controller = "OAuth2Authentication", action = "Login" },
+            routeBuilder.MapLocalizedRoute(name,
+                  template,
+                  new { controller = controller, action = action },
                   new { },
-                  new[] { "Nop.Plugin.ExternalAuth.OAuth2.Controllers" }
+                  new[] { assembly }
               );
         }
 

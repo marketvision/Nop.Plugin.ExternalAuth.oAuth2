@@ -1,38 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Nop.Core.Domain.Customers;
 using Nop.Plugin.ExternalAuth.OAuth2.Models;
 using Nop.Services.Authentication.External;
 using Nop.Services.Configuration;
 using Nop.Services.Localization;
 using Nop.Web.Framework;
 using Nop.Web.Framework.Controllers;
-using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.Filters;
-using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
 {
     public class OAuth2AuthenticationController : BasePluginController
     {
-        #region Fields
-
         private readonly IExternalAuthenticationService _externalAuthenticationService;
         private readonly ILocalizationService _localizationService;
         private readonly IOptionsMonitorCache<OAuthOptions> _optionsCache;
         private readonly ISettingService _settingService;
         private readonly OAuth2AuthenticationSettings _oAuth2AuthenticationSettings;
         private readonly IAuthenticationPluginManager _authenticationPluginManager;
-
-        #endregion
-
-        #region Ctor
 
         public OAuth2AuthenticationController(IExternalAuthenticationService externalAuthenticationService,
             ILocalizationService localizationService,
@@ -48,10 +38,6 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
             _oAuth2AuthenticationSettings = oAuth2AuthenticationSettings;
             _authenticationPluginManager = authenticationPluginManager;
         }
-
-        #endregion
-
-        #region Methods
 
         [AuthorizeAdmin]
         [Area(AreaNames.Admin)]
@@ -94,6 +80,16 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
             return Configure();
         }
 
+        public IActionResult Logout()
+        {
+            var authenticationProperties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("Logout", "Customer", false)
+            };
+
+            return SignOut(authenticationProperties, OAuth2AuthenticationDefaults.AuthenticationScheme);
+        }
+
         public IActionResult Login(string returnUrl, bool useNopLogin = false)
         {
             if (IsNotConfigured() || useNopLogin)
@@ -109,9 +105,6 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
             return Challenge(authenticationProperties, OAuth2AuthenticationDefaults.AuthenticationScheme);
         }
 
-        [HttpPost]
-        public IActionResult Login(object model, string returnUrl, bool captchaValid) => RedirectToActionPreserveMethod("Login", "Customer");
-
         public async Task<IActionResult> LoginCallback(string returnUrl)
         {
             var authenticateResult = await this.HttpContext.AuthenticateAsync(OAuth2AuthenticationDefaults.AuthenticationScheme);
@@ -121,8 +114,7 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
             var authenticationParameters = new ExternalAuthenticationParameters
             {
                 ProviderSystemName = OAuth2AuthenticationDefaults.SystemName,
-                AccessToken = await this.HttpContext
-                    .GetTokenAsync(OAuth2AuthenticationDefaults.AuthenticationScheme, OAuth2AuthenticationDefaults.AccessTokenName),
+                AccessToken = await this.HttpContext.GetTokenAsync(OAuth2AuthenticationDefaults.AuthenticationScheme, OAuth2AuthenticationDefaults.AccessTokenName),
                 Email = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.Email)?.Value,
                 ExternalIdentifier = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value,
                 ExternalDisplayIdentifier = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.Name)?.Value,
@@ -131,6 +123,9 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
 
             return _externalAuthenticationService.Authenticate(authenticationParameters, returnUrl);
         }
+
+        [HttpPost]
+        public IActionResult Login(object model, string returnUrl, bool captchaValid) => RedirectToActionPreserveMethod("Login", "Customer");
 
         bool IsNotConfigured()
         {
@@ -141,7 +136,5 @@ namespace Nop.Plugin.ExternalAuth.OAuth2.Controllers
                 string.IsNullOrEmpty(_oAuth2AuthenticationSettings.Authority) ||
                 string.IsNullOrEmpty(_oAuth2AuthenticationSettings.Scopes);
         }
-
-        #endregion
     }
 }
