@@ -5,7 +5,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.StaticFiles;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
-using Nop.Plugin.ExternalAuth.OAuth2;
 using Nop.Services.Authentication.External;
 using Nop.Services.Common;
 using Nop.Services.Customers;
